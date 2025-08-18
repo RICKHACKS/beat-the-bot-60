@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Beat the Bot — 60s (Mobile, v2)</title>
+<style>
+  :root{--bg:#0b1220;--panel:#0f172a;--muted:#94a3b8;--text:#e5e7eb;--accent:#22d3ee;--accent2:#f59e0b;--green:#10b981;--red:#ef4444;}
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;overflow-x:hidden;background:radial-gradient(1200px 600px at 30% -20%, #1f2937 0%, #0b1220 60%, #060a13 100%);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+  .wrap{max-width:720px;margin:0 auto;padding:14px 14px 100px;overflow-x:hidden}
+  .card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,0));border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px;box-shadow:0 6px 24px rgba(0,0,0,.35)}
+  h1{font-size:22px;margin:0 0 4px}
+  .muted{color:var(--muted);font-size:14px}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+  .pill{display:inline-flex;gap:6px;align-items:center;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);}
+  .timer{font-variant-numeric:tabular-nums;font-weight:900}
+  .bar{height:8px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden}
+  .bar>div{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .2s}
+  .qbox{display:grid;gap:10px;margin-top:10px}
+  .prompt{background:#0c1323;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px;font-size:16px;line-height:1.35;word-break:break-word}
+  .options{display:grid;gap:10px;margin-top:4px;grid-template-columns:1fr}
+  .opt{padding:16px;border-radius:14px;border:2px solid rgba(255,255,255,.12);background:#0c1323;color:var(--text);font-weight:800;text-align:left;font-size:16px;width:100%}
+  .opt.correct{border-color:rgba(16,185,129,.95);background:rgba(16,185,129,.18)}
+  .opt.wrong{border-color:rgba(239,68,68,1);background:rgba(239,68,68,.14);animation:shake .16s linear 0s 2}
+  @keyframes shake{0%{transform:translateX(0)}25%{transform:translateX(-3px)}50%{transform:translateX(3px)}75%{transform:translateX(-2px)}100%{transform:translateX(0)}}
+  .sticky{position:fixed;left:0;right:0;bottom:0;z-index:50;padding:10px 14px env(safe-area-inset-bottom);background:linear-gradient(180deg,rgba(2,6,23,.2),rgba(2,6,23,.88));backdrop-filter:blur(8px);border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;gap:10px}
+  button{background:#162036;border:1px solid rgba(255,255,255,.1);color:var(--text);border-radius:12px;padding:12px 16px;font-size:16px;font-weight:800}
+  .primary{background:linear-gradient(180deg,var(--accent),#0ea5e9);color:#021;border:none}
+  .accent{background:linear-gradient(180deg,var(--accent2),#e8790a);color:#210;border:none}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:8px 10px;border-bottom:1px dashed rgba(255,255,255,.12);text-align:left;font-size:14px}
+  .confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+  .piece{position:absolute;width:8px;height:14px;opacity:.9;top:-20px}
+  /* Start tile */
+  .start-tile{display:grid;place-items:center;height:180px;border:2px dashed rgba(255,255,255,.12);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));cursor:pointer}
+  .start-tile .big{font-size:20px;font-weight:900}
+  .sub{color:var(--muted);font-size:13px;margin-top:6px}
+  /* Winner modal */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:60;padding:20px}
+  .modal{max-width:520px;width:100%;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+  .win{font-size:28px;margin:6px 0 2px}
+  .emoji{font-size:60px;line-height:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="top">
+      <div>
+        <h1>Beat the Bot — 60s</h1>
+        <div class="muted">Finish <b id="targetN">12</b> micro‑tasks before time runs out. Wrong answers cost <b>3s</b>.</div>
+      </div>
+      <div class="top">
+        <span class="pill">⏱ Human <span id="time" class="timer" style="margin-left:6px">60</span>s</span>
+        <span class="pill" id="botPill" style="display:none">🤖 Bot <span id="botTime" class="timer" style="margin-left:6px">0.0</span>s</span>
+      </div>
+    </div>
+    <div class="bar" style="margin-top:10px"><div id="bar" style="width:100%"></div></div>
+  </div>
+
+  <!-- Game -->
+  <div id="game" class="card qbox" style="margin-top:10px">
+    <div id="startTile" class="start-tile">
+      <div>
+        <div class="big">Tap to Start</div>
+        <div class="sub">60 seconds • 12 tasks • 2 skips</div>
+      </div>
+    </div>
+
+    <div class="top" id="hud" style="display:none">
+      <div class="pill">Tasks done: <b id="done">0</b></div>
+      <div class="pill">Accuracy: <b id="acc">100%</b></div>
+    </div>
+    <div id="prompt" class="prompt" style="display:none"></div>
+    <div id="options" class="options" style="display:none"></div>
+    <div class="muted" id="note" style="display:none"></div>
+  </div>
+
+  <!-- Scoreboard -->
+  <div class="card" style="margin-top:10px">
+    <div class="top"><h2 style="margin:0">Scoreboard (seconds‑left)</h2></div>
+    <div class="top" style="margin-top:8px">
+      <input id="name" placeholder="Your name" style="padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0c1323;color:var(--text);width:100%">
+      <button id="save" class="accent" disabled>Save Result</button>
+    </div>
+    <table style="margin-top:8px">
+      <thead><tr><th>#</th><th>Name</th><th>Human Seconds Left</th><th>Tasks</th><th>Accuracy</th><th>Bot Seconds</th><th>Winner</th><th>When</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="top" style="margin-top:8px">
+      <button id="export">Export CSV</button>
+      <button id="clear">Clear</button>
+      <button id="share">Share</button>
+    </div>
+  </div>
+</div>
+
+<div class="sticky">
+  <button id="startBtn" class="primary">Start ▶</button>
+  <div class="pill">Skips <b id="skipsLeft">2</b></div>
+  <button id="skip">Skip Task</button>
+  <button id="startBot" class="accent" style="display:none">Start Bot Now</button>
+</div>
+
+<div class="confetti" id="confetti"></div>
+
+<!-- Winner Modal -->
+<div id="winner" class="overlay">
+  <div class="modal">
+    <div class="emoji" id="winnerEmoji">🏆</div>
+    <div class="win" id="winnerText">Human Wins!</div>
+    <div class="muted" id="winnerSub">Great job!</div>
+    <div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <button id="closeWinner">Close</button>
+      <button id="playAgain" class="primary">Play Again</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// -------- Config --------
+const TARGET_TASKS = 12;
+const TIME_START = 60;
+const TIME_PENALTY = 3;
+const SKIPS_START = 2;
+// Slower bot with thinking delay + jitter
+const BOT_THINK_MS = 900;      // initial thinking time
+const BOT_PER_Q_BASE = 850;    // base ms per question
+const BOT_PER_Q_JITTER = 300;  // random extra 0-300ms
+document.getElementById("targetN").textContent = TARGET_TASKS;
+
+// -------- Data Pools --------
+const NAMES=[
+  ["Asha","Verma"],["Ravi","Patel"],["Maya","Sharma"],["Arjun","Mehta"],["Priya","Kumar"],
+  ["Nikhil","Gupta"],["Neha","Kapoor"],["Karan","Joshi"],["Isha","Malhotra"],["Rohan","Desai"],
+  ["Anita","Bose"],["Rahul","Chopra"],["Vikram","Singh"],["Pooja","Rao"],["Dev","Nair"]
+];
+const TICKETS=[
+  {desc:"Laptop not turning on", cat:"IT"},
+  {desc:"Password reset required", cat:"IT"},
+  {desc:"Reimbursement not received", cat:"Finance"},
+  {desc:"New employee onboarding paperwork", cat:"HR"},
+  {desc:"Phishing email reported by user", cat:"Security"},
+  {desc:"Air conditioner too cold in Meeting Room 3", cat:"Facilities"},
+  {desc:"Vendor invoice duplicate flagged", cat:"Finance"},
+  {desc:"Access to HR portal needed", cat:"HR"},
+  {desc:"Badge access not working", cat:"Security"}
+];
+const INVOICES=[
+  {txt:"Invoice #1432\nSubtotal: 1,250.00\nTax: 225.00\nTotal Due: 1,475.00", total:"1,475.00", distractors:["1,250.00","1,225.00"]},
+  {txt:"INV-2049\nItems: 3\nSubtotal: 980.00\nGST: 176.40\nTotal Due: 1,156.40", total:"1,156.40", distractors:["980.00","1,196.40"]},
+  {txt:"Invoice #889\nSubtotal: 2,300.00\nDiscount: 115.00\nTax: 392.70\nTotal Due: 2,577.70", total:"2,577.70", distractors:["2,300.00","2,607.70"]},
+  {txt:"INV-551\nSubtotal: 450.00\nTax: 81.00\nShipping: 25.00\nTotal Due: 556.00", total:"556.00", distractors:["531.00","575.00"]}
+];
+
+// -------- Helpers --------
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function choice(a){return a[Math.floor(Math.random()*a.length)]}
+function emailBCG(f,l){return `${l.toLowerCase()}.${f.toLowerCase()}@bcg.com`}
+function pct(a,b){return (b?Math.round(a/b*100):100)+"%"}
+function fmt(ms){return (ms/1000).toFixed(1)}
+function vibrate(ms){ if(navigator.vibrate) try{navigator.vibrate(ms)}catch(e){} }
+function show(el,flag){ el.style.display = flag ? "" : "none"; }
+
+// Confetti
+function launchConfetti(){
+  const root=document.getElementById("confetti"); root.innerHTML="";
+  for(let i=0;i<90;i++){
+    const d=document.createElement("div");
+    d.className="piece"; d.style.left=Math.random()*100+"%";
+    d.style.background=`hsl(${Math.floor(Math.random()*360)},90%,60%)`;
+    const fall=700+Math.random()*1200; d.style.transition=`transform ${fall}ms ease-out, opacity ${fall}ms linear`;
+    root.appendChild(d);
+    requestAnimationFrame(()=>{ d.style.transform=`translateY(${window.innerHeight+40}px) rotate(${Math.random()*720-360}deg)`; d.style.opacity="0"; });
+    setTimeout(()=>d.remove(), fall);
+  }
+}
+
+// Winner Modal
+function openWinner(title, sub, emoji){
+  const ov=document.getElementById("winner");
+  document.getElementById("winnerText").textContent = title;
+  document.getElementById("winnerSub").textContent = sub;
+  document.getElementById("winnerEmoji").textContent = emoji || "🏆";
+  ov.style.display="flex";
+}
+function closeWinner(){ document.getElementById("winner").style.display="none"; }
+
+// -------- Question generation --------
+function genEmailQ(){
+  const [f,l]=choice(NAMES);
+  const correct=emailBCG(f,l);
+  const wrongs=shuffle([`${f.toLowerCase()}.${l.toLowerCase()}@bcg.com`,`${l.toLowerCase()}_${f.toLowerCase()}@bcg.com`,`${l.toLowerCase()}${f[0].toLowerCase()}@bcg.com`]).slice(0,2);
+  const opts=shuffle([correct,...wrongs]);
+  return {
+    type:"email",
+    prompt:`<b>Email Formatter</b><br>Pick the correct BCG address:<br><span class="pill">${l}, ${f}</span><br><span class="muted">Format: <code>lastname.firstname@bcg.com</code></span>`,
+    options:opts,
+    correct:opts.indexOf(correct)
+  };
+}
+function genTicketQ(){
+  const t=choice(TICKETS);
+  const opts=shuffle(["IT","HR","Finance","Facilities","Security"]);
+  return {
+    type:"ticket",
+    prompt:`<b>Ticket Router</b><br>Which queue?<br><div class="prompt" style="margin-top:6px;white-space:pre-line">${t.desc}</div>`,
+    options:opts,
+    correct:opts.indexOf(t.cat)
+  };
+}
+function genInvoiceQ(){
+  const inv=choice(INVOICES);
+  const opts=shuffle([inv.total,...inv.distractors]).map(x=>"₹ "+x);
+  return {
+    type:"invoice",
+    prompt:`<b>Invoice Extract</b><br>Tap the correct <b>Total Due</b>:`+
+      `<div class="prompt" style="margin-top:6px;white-space:pre-line">${inv.txt}</div>`,
+    options:opts,
+    correct:opts.indexOf("₹ "+inv.total)
+  };
+}
+function genQuestions(n){
+  const arr=[];
+  for(let i=0;i<n;i++){
+    arr.push(Math.random()<.34?genEmailQ(): Math.random()<.5?genTicketQ(): genInvoiceQ());
+  }
+  return arr;
+}
+
+// -------- State --------
+let QUESTIONS=[];
+let qIndex=0, done=0, correctCount=0, wrongCount=0, skipsLeft=SKIPS_START;
+let time=TIME_START, tHandle=null, running=false, finishedHuman=false;
+let botRunning=false, botTicker=null, botStart=null, botEnd=null;
+
+// Elements
+const elTime=document.getElementById("time");
+const elBar=document.getElementById("bar");
+const elPrompt=document.getElementById("prompt");
+const elOptions=document.getElementById("options");
+const elNote=document.getElementById("note");
+const elDone=document.getElementById("done");
+const elAcc=document.getElementById("acc");
+const elSkips=document.getElementById("skipsLeft");
+const elStartBot=document.getElementById("startBot");
+const elBotPill=document.getElementById("botPill");
+const elBotTime=document.getElementById("botTime");
+const startTile=document.getElementById("startTile");
+const hud=document.getElementById("hud");
+
+// -------- Rendering --------
+function renderQuestion(){
+  const q=QUESTIONS[qIndex];
+  show(elPrompt,true); show(elOptions,true); show(elNote,true); show(hud,true);
+  elPrompt.innerHTML=q.prompt;
+  elOptions.innerHTML = q.options.map((o,i)=>`<button class="opt" data-i="${i}">${o}</button>`).join("");
+  [...elOptions.children].forEach(btn=>{
+    btn.onclick=()=>{
+      const pick=Number(btn.dataset.i);
+      // Highlight selection
+      if(pick===q.correct){
+        btn.classList.add("correct");
+        vibrate(12);
+        correctCount++; done++; qIndex++;
+        elDone.textContent=done; elAcc.textContent=pct(correctCount, correctCount+wrongCount);
+        lockAndReveal(q.correct);
+        setTimeout(nextStep, 320);
+      }else{
+        btn.classList.add("wrong");
+        vibrate([30]);
+        wrongCount++; elAcc.textContent=pct(correctCount, correctCount+wrongCount);
+        time=Math.max(0, time - TIME_PENALTY);
+        updateTime();
+        lockAndReveal(q.correct);
+        setTimeout(nextStep, 520);
+      }
+    };
+  });
+  elNote.textContent = `Wrong = -${TIME_PENALTY}s • Skips left: ${skipsLeft}`;
+}
+function lockAndReveal(correctIndex){
+  [...elOptions.children].forEach((b,i)=>{
+    b.disabled=true;
+    if(i===correctIndex) b.classList.add("correct");
+  });
+}
+function nextStep(){
+  if(done>=TARGET_TASKS){ finishHuman(true); return; }
+  if(qIndex>=QUESTIONS.length){ finishHuman(true); return; }
+  renderQuestion();
+}
+
+// -------- Timer --------
+function updateTime(){
+  elTime.textContent = time;
+  elBar.style.width = (time/TIME_START*100)+"%";
+  if(time<=0){ finishHuman(false); }
+}
+function tick(){ time--; if(time<0) time=0; updateTime(); }
+function startHuman(){
+  if(running) return;
+  running=true; finishedHuman=false;
+  QUESTIONS = genQuestions(TARGET_TASKS);
+  qIndex=0; done=0; correctCount=0; wrongCount=0; skipsLeft=SKIPS_START;
+  time=TIME_START; updateTime();
+  elDone.textContent="0"; elAcc.textContent="100%"; elSkips.textContent=SKIPS_START;
+  clearInterval(tHandle); tHandle=setInterval(tick, 1000);
+  startTile.style.display="none"; // hide tile
+  renderQuestion();
+  document.getElementById("save").disabled=true;
+  elStartBot.style.display="none";
+  elBotPill.style.display="none"; elBotTime.textContent="0.0";
+}
+function finishHuman(completedAll){
+  running=false; finishedHuman=true; clearInterval(tHandle);
+  const secondsLeft = Math.max(0,time);
+  elOptions.innerHTML="";
+  elPrompt.innerHTML = completedAll
+    ? `<b>Nice!</b> You completed ${TARGET_TASKS} tasks with <b>${secondsLeft}</b>s left.`
+    : `<b>Time!</b> You completed ${done}/${TARGET_TASKS} tasks.`;
+  launchConfetti();
+  // Show "Start Bot Now"
+  elStartBot.style.display="inline-block";
+}
+
+// -------- Skips --------
+document.getElementById("skip").onclick=()=>{
+  if(!running) return;
+  if(skipsLeft>0){
+    skipsLeft--; elSkips.textContent=skipsLeft;
+    qIndex++; done++; elDone.textContent=done;
+    if(done>=TARGET_TASKS){ finishHuman(true); } else { renderQuestion(); }
+  }else{
+    elNote.textContent="No skips left.";
+  }
+};
+
+// -------- Bot run (replay same questions, choose correct options, slowed) --------
+function runBot(){
+  if(botRunning) return;
+  botRunning=true; elStartBot.style.display="none";
+  elBotPill.style.display="inline-flex";
+  // reset view to quiz mode
+  show(elPrompt,true); show(elOptions,true); show(elNote,true);
+  elPrompt.innerHTML = "<b>Bot thinking...</b>";
+  elOptions.innerHTML = "";
+  // bot timer
+  botStart = performance.now(); botEnd=null;
+  clearInterval(botTicker);
+  botTicker=setInterval(()=>{
+    if(botStart && !botEnd){
+      const ms = performance.now()-botStart;
+      elBotTime.textContent = fmt(ms);
+    }
+  }, 100);
+
+  // after initial thinking delay, start answering
+  setTimeout(()=>{
+    qIndex=0;
+    function doOne(){
+      if(qIndex>=QUESTIONS.length){
+        botEnd = performance.now(); clearInterval(botTicker); botRunning=false;
+        const botSeconds = Number(fmt(botEnd - botStart));
+        elPrompt.innerHTML += `<br><br><span class="muted">Bot finished in <b>${botSeconds}s</b>.</span>`;
+        document.getElementById("save").disabled=false;
+        // Winner logic
+        const humanSecondsLeft = Math.max(0,time);
+        const humanTimeUsed = TIME_START - humanSecondsLeft;
+        let title, sub, emoji;
+        if(done>=TARGET_TASKS){
+          if(humanTimeUsed < botSeconds){ title="🎉 Human Wins!"; sub=`You finished in ${humanTimeUsed.toFixed(1)}s vs Bot ${botSeconds}s`; emoji="😎"; }
+          else if(humanTimeUsed > botSeconds){ title="🤖 Bot Wins"; sub=`Bot ${botSeconds}s vs Human ${humanTimeUsed.toFixed(1)}s`; emoji="🤖"; }
+          else { title="It's a Tie!"; sub=`Both at ${botSeconds}s`; emoji="🤝"; }
+        }else{
+          title="🤖 Bot Wins"; sub=`Human didn't finish. Bot ${botSeconds}s`; emoji="🤖";
+        }
+        openWinner(title, sub, emoji);
+        launchConfetti();
+        return;
+      }
+      const q=QUESTIONS[qIndex];
+      elPrompt.innerHTML=q.prompt;
+      elOptions.innerHTML = q.options.map((o,i)=>`<button class="opt" disabled>${o}</button>`).join("");
+      const buttons=[...elOptions.children];
+      const delay = BOT_PER_Q_BASE + Math.floor(Math.random()*BOT_PER_Q_JITTER);
+      setTimeout(()=>{ buttons[q.correct].classList.add("correct"); }, Math.floor(delay/2));
+      setTimeout(()=>{ qIndex++; doOne(); }, delay);
+    }
+    doOne();
+  }, BOT_THINK_MS);
+}
+
+// -------- Scoreboard --------
+const KEY="btb60_integrated_scores_v2";
+function load(){return JSON.parse(localStorage.getItem(KEY)||"[]");}
+function save(a){localStorage.setItem(KEY, JSON.stringify(a));}
+function renderRows(){
+  const arr=load().sort((a,b)=> b.humanSecondsLeft - a.humanSecondsLeft || b.tasks - a.tasks || b.acc - a.acc );
+  document.getElementById("rows").innerHTML = arr.map((x,i)=>`<tr><td>${i+1}</td><td>${x.name}</td><td>${x.humanSecondsLeft}</td><td>${x.tasks}</td><td>${x.acc}%</td><td>${x.botSeconds??"-"}</td><td>${x.winner}</td><td>${new Date(x.when).toLocaleString()}</td></tr>`).join("");
+}
+document.getElementById("save").onclick=()=>{
+  const name=(document.getElementById("name").value||"Player").trim();
+  const humanSecondsLeft=Math.max(0,time);
+  const acc = (correctCount+wrongCount)?Math.round(correctCount/(correctCount+wrongCount)*100):100;
+  const botSeconds = (botStart && botEnd) ? Number(fmt(botEnd - botStart)) : null;
+  let winner = "-";
+  if(botSeconds!=null){
+    const humanTimeUsed = TIME_START - humanSecondsLeft;
+    if(done>=TARGET_TASKS){
+      if(humanTimeUsed < botSeconds){ winner="Human"; }
+      else if(humanTimeUsed > botSeconds){ winner="Bot"; }
+      else { winner="Tie"; }
+    }else{
+      winner="Bot";
+    }
+  }
+  const row={name, humanSecondsLeft, tasks: done, acc, botSeconds, winner, when: Date.now()};
+  const arr=load(); arr.push(row); save(arr); renderRows();
+};
+document.getElementById("export").onclick=()=>{
+  const arr=load();
+  const header="Name,HumanSecondsLeft,Tasks,Accuracy,BotSeconds,Winner,When\n";
+  const lines=arr.map(x=>`${x.name},${x.humanSecondsLeft},${x.tasks},${x.acc},${x.botSeconds??""},${x.winner},${new Date(x.when).toISOString()}`).join("\n");
+  const csv=header+lines; const blob=new Blob([csv],{type:"text/csv"}); const url=URL.createObjectURL(blob);
+  const a=document.createElement("a"); a.href=url; a.download="beat_the_bot_60_v2_scores.csv"; a.click(); URL.revokeObjectURL(url);
+};
+document.getElementById("clear").onclick=()=>{ if(confirm("Clear scoreboard on this device?")){ save([]); renderRows(); }};
+document.getElementById("share").onclick=()=>{
+  const arr=load(); const top=arr.sort((a,b)=> b.humanSecondsLeft - a.humanSecondsLeft || b.tasks - a.tasks )[0];
+  const msg = top ? `Top: ${top.name} had ${top.humanSecondsLeft}s left (tasks ${top.tasks}).` : "No scores yet";
+  if(navigator.share){ navigator.share({title:"Beat the Bot — 60s", text: msg}).catch(()=>{}); } else { alert(msg); }
+};
+
+// -------- Controls --------
+document.getElementById("startBtn").onclick=startHuman;
+document.getElementById("startBot").onclick=runBot;
+startTile.onclick=startHuman;
+document.getElementById("closeWinner").onclick=closeWinner;
+document.getElementById("playAgain").onclick=()=>{ closeWinner(); location.reload(); };
+
+// Initial render
+renderRows();
+</script>
+</body>
+</html>
