@@ -1,448 +1,450 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Beat the Bot — 60s (Mobile, v2)</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"/>
+<title>Beat the Bot — Swipe Security (v6)</title>
+<meta name="theme-color" content="#0b1220"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <style>
-  :root{--bg:#0b1220;--panel:#0f172a;--muted:#94a3b8;--text:#e5e7eb;--accent:#22d3ee;--accent2:#f59e0b;--green:#10b981;--red:#ef4444;}
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{margin:0;overflow-x:hidden;background:radial-gradient(1200px 600px at 30% -20%, #1f2937 0%, #0b1220 60%, #060a13 100%);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
-  .wrap{max-width:720px;margin:0 auto;padding:14px 14px 100px;overflow-x:hidden}
-  .card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,0));border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px;box-shadow:0 6px 24px rgba(0,0,0,.35)}
-  h1{font-size:22px;margin:0 0 4px}
-  .muted{color:var(--muted);font-size:14px}
-  .top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
-  .pill{display:inline-flex;gap:6px;align-items:center;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);}
-  .timer{font-variant-numeric:tabular-nums;font-weight:900}
-  .bar{height:8px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden}
-  .bar>div{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .2s}
-  .qbox{display:grid;gap:10px;margin-top:10px}
-  .prompt{background:#0c1323;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px;font-size:16px;line-height:1.35;word-break:break-word}
-  .options{display:grid;gap:10px;margin-top:4px;grid-template-columns:1fr}
-  .opt{padding:16px;border-radius:14px;border:2px solid rgba(255,255,255,.12);background:#0c1323;color:var(--text);font-weight:800;text-align:left;font-size:16px;width:100%}
-  .opt.correct{border-color:rgba(16,185,129,.95);background:rgba(16,185,129,.18)}
-  .opt.wrong{border-color:rgba(239,68,68,1);background:rgba(239,68,68,.14);animation:shake .16s linear 0s 2}
-  @keyframes shake{0%{transform:translateX(0)}25%{transform:translateX(-3px)}50%{transform:translateX(3px)}75%{transform:translateX(-2px)}100%{transform:translateX(0)}}
-  .sticky{position:fixed;left:0;right:0;bottom:0;z-index:50;padding:10px 14px env(safe-area-inset-bottom);background:linear-gradient(180deg,rgba(2,6,23,.2),rgba(2,6,23,.88));backdrop-filter:blur(8px);border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;gap:10px}
-  button{background:#162036;border:1px solid rgba(255,255,255,.1);color:var(--text);border-radius:12px;padding:12px 16px;font-size:16px;font-weight:800}
-  .primary{background:linear-gradient(180deg,var(--accent),#0ea5e9);color:#021;border:none}
-  .accent{background:linear-gradient(180deg,var(--accent2),#e8790a);color:#210;border:none}
-  table{width:100%;border-collapse:collapse}
-  th,td{padding:8px 10px;border-bottom:1px dashed rgba(255,255,255,.12);text-align:left;font-size:14px}
-  .confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden}
-  .piece{position:absolute;width:8px;height:14px;opacity:.9;top:-20px}
-  /* Start tile */
-  .start-tile{display:grid;place-items:center;height:180px;border:2px dashed rgba(255,255,255,.12);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));cursor:pointer}
-  .start-tile .big{font-size:20px;font-weight:900}
-  .sub{color:var(--muted);font-size:13px;margin-top:6px}
-  /* Winner modal */
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:60;padding:20px}
-  .modal{max-width:520px;width:100%;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.5)}
-  .win{font-size:28px;margin:6px 0 2px}
-  .emoji{font-size:60px;line-height:1}
+:root{ --vh:1vh; --muted:#9aa6b2; --text:#e5e7eb; }
+*{box-sizing:border-box}
+html,body{height:100%; background:#050a13; color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; overflow-x:hidden; }
+body{ overscroll-behavior-y: none; }
+.wrap{max-width:760px;margin:0 auto;padding:16px 14px 24px}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.09);border-radius:16px;padding:14px;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+h1{margin:0 0 6px;font-size:22px}
+.muted{color:#9aa6b2;font-size:14px}
+.pill{display:inline-flex;gap:8px;align-items:center;padding:6px 12px;border:1px solid rgba(255,255,255,.12);border-radius:999px;background:rgba(255,255,255,.06);font-weight:700}
+.bar{height:8px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.08)}
+.bar>div{height:100%;background:linear-gradient(90deg,#22d3ee,#a78bfa)}
+
+.hidden{display:none}
+
+.name-gate{display:grid;gap:10px}
+.name-gate input{padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:#0b1220;color:var(--text);font-size:16px}
+button{background:#162036;border:1px solid rgba(255,255,255,.14);color:#e5e7eb;border-radius:12px;padding:12px 16px;font-size:16px;font-weight:800}
+.primary{background:linear-gradient(180deg,#22d3ee,#0ea5e9);border:none;color:#021}
+
+.arena{position:relative;height:calc(var(--vh)*60);max-height:640px;min-height:360px;border-radius:16px;border:1px dashed rgba(255,255,255,.15);background:rgba(2,6,23,.35);overflow:hidden;touch-action:none}
+.tcard{position:absolute;inset:10px;border-radius:16px;background:#0c1323;border:1px solid rgba(255,255,255,.12);box-shadow:0 18px 48px rgba(0,0,0,.45);overflow:hidden;display:grid;grid-template-rows:minmax(0,1fr) auto auto;touch-action:none}
+.timg{width:100%;height:100%;object-fit:contain;background:#0a0f1e}
+.qtext{padding:10px 12px;font-weight:800}
+.helper{padding:8px 12px;color:#9aa6b2;font-size:13px;letter-spacing:.2px}
+.badge{position:absolute;top:16px;padding:8px 12px;border-radius:12px;font-weight:900;letter-spacing:.5px;border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(4px)}
+.badge.yes{right:16px;background:rgba(239,68,68,.15);color:#fecaca} /* ATTACK */
+.badge.no{left:16px;background:rgba(16,185,129,.15);color:#bbf7d0} /* SAFE */
+.flash{position:absolute;inset:0;display:grid;place-items:center;font-size:30px;font-weight:900}
+.flash.ok{color:#bbf7d0;text-shadow:0 0 10px rgba(16,185,129,.6)}
+.flash.no{color:#fecaca;text-shadow:0 0 10px rgba(239,68,68,.6)}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:60;padding:20px}
+.modal{max-width:520px;width:100%;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.emoji{font-size:60px}
+.win{font-size:26px;margin:6px 0 2px}
+
+.tableWrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;min-width:640px;border-collapse:collapse}
+th,td{padding:8px 10px;border-bottom:1px dashed rgba(255,255,255,.12);text-align:left;font-size:14px;white-space:nowrap}
+
+.count{font-size:44px;font-weight:900}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="card">
-    <div class="top">
-      <div>
-        <h1>Beat the Bot — 60s</h1>
-        <div class="muted">Finish <b id="targetN">12</b> micro‑tasks before time runs out. Wrong answers cost <b>3s</b>.</div>
-      </div>
-      <div class="top">
-        <span class="pill">⏱ Human <span id="time" class="timer" style="margin-left:6px">60</span>s</span>
-        <span class="pill" id="botPill" style="display:none">🤖 Bot <span id="botTime" class="timer" style="margin-left:6px">0.0</span>s</span>
-      </div>
-    </div>
-    <div class="bar" style="margin-top:10px"><div id="bar" style="width:100%"></div></div>
+
+  <!-- Gate -->
+  <div id="gateCard" class="card">
+    <h1>Beat the Bot — Swipe Security</h1>
+    <div class="muted">Enter name → 60s round. Each card asks a question (e.g., “Is this vishing?”). <b>RIGHT = Yes (it’s an attack)</b>, <b>LEFT = No (looks safe)</b>. 10 unique cards per game.</div>
+    <form id="gateForm" class="name-gate" style="margin-top:10px">
+      <input id="playerName" name="playerName" placeholder="Your name (e.g., Rohit)" required minlength="2" autocomplete="name"/>
+      <button class="primary" type="submit">Enter Game ▶</button>
+      <div class="muted" style="font-size:12px">Tip: Add to Home Screen for full‑screen feel on iOS/Android.</div>
+    </form>
   </div>
 
-  <!-- Game -->
-  <div id="game" class="card qbox" style="margin-top:10px">
-    <div id="startTile" class="start-tile">
-      <div>
-        <div class="big">Tap to Start</div>
-        <div class="sub">60 seconds • 12 tasks • 2 skips</div>
+  <!-- Game UI -->
+  <div id="gameUI" class="hidden">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+        <div>
+          <h1>Swipe Security</h1>
+          <div class="muted">RIGHT = Yes (attack) • LEFT = No (safe).</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <span class="pill">⏱ Time <b id="time">60</b>s</span>
+          <span class="pill">⭐ Points <b id="points">0</b></span>
+        </div>
+      </div>
+      <div class="bar" style="margin-top:10px"><div id="bar" style="width:100%"></div></div>
+    </div>
+
+    <div class="card">
+      <div id="arena" class="arena">
+        <div id="tapToStart" class="tcard" style="display:grid;place-items:center">
+          <div style="text-align:center;padding:16px">
+            <div class="win" style="font-size:22px">Tap to Start</div>
+            <div class="muted">10 questions, no repeats. Images auto-fit your screen.</div>
+          </div>
+        </div>
+      </div>
+      <div class="muted" style="text-align:center;margin-top:6px;font-size:13px">Drag a card. Release to choose.</div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="resultsPage" class="hidden">
+    <div class="card">
+      <h2 style="margin:0">Results</h2>
+      <div id="resultTitle" class="muted">Summary</div>
+    </div>
+    <div class="card" style="margin-top:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">Scoreboard — this device</h3></div>
+      <div class="tableWrap">
+        <table style="margin-top:8px">
+          <thead><tr><th>#</th><th>Name</th><th>Points</th><th>Human ✔</th><th>Bot ✔</th><th>Human s</th><th>Bot s</th><th>Winner</th><th>When</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
+        <button id="export">Export CSV</button>
+        <button id="clear">Clear</button>
+        <button id="again">Play Again</button>
       </div>
     </div>
-
-    <div class="top" id="hud" style="display:none">
-      <div class="pill">Tasks done: <b id="done">0</b></div>
-      <div class="pill">Accuracy: <b id="acc">100%</b></div>
-    </div>
-    <div id="prompt" class="prompt" style="display:none"></div>
-    <div id="options" class="options" style="display:none"></div>
-    <div class="muted" id="note" style="display:none"></div>
   </div>
 
-  <!-- Scoreboard -->
-  <div class="card" style="margin-top:10px">
-    <div class="top"><h2 style="margin:0">Scoreboard (seconds‑left)</h2></div>
-    <div class="top" style="margin-top:8px">
-      <input id="name" placeholder="Your name" style="padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0c1323;color:var(--text);width:100%">
-      <button id="save" class="accent" disabled>Save Result</button>
-    </div>
-    <table style="margin-top:8px">
-      <thead><tr><th>#</th><th>Name</th><th>Human Seconds Left</th><th>Tasks</th><th>Accuracy</th><th>Bot Seconds</th><th>Winner</th><th>When</th></tr></thead>
-      <tbody id="rows"></tbody>
-    </table>
-    <div class="top" style="margin-top:8px">
-      <button id="export">Export CSV</button>
-      <button id="clear">Clear</button>
-      <button id="share">Share</button>
-    </div>
-  </div>
 </div>
 
-<div class="sticky">
-  <button id="startBtn" class="primary">Start ▶</button>
-  <div class="pill">Skips <b id="skipsLeft">2</b></div>
-  <button id="skip">Skip Task</button>
-  <button id="startBot" class="accent" style="display:none">Start Bot Now</button>
+<!-- Countdown overlay for bot -->
+<div id="countdown" class="overlay">
+  <div class="modal">
+    <div class="count" id="countNum">3</div>
+    <div class="muted">Bot is about to play…</div>
+  </div>
 </div>
-
-<div class="confetti" id="confetti"></div>
 
 <!-- Winner Modal -->
 <div id="winner" class="overlay">
   <div class="modal">
-    <div class="emoji" id="winnerEmoji">🏆</div>
-    <div class="win" id="winnerText">Human Wins!</div>
-    <div class="muted" id="winnerSub">Great job!</div>
+    <div id="winnerEmoji" class="emoji">🏆</div>
+    <div id="winnerText" class="win">Human Wins!</div>
+    <div id="winnerSub" class="muted">Great job!</div>
     <div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
       <button id="closeWinner">Close</button>
-      <button id="playAgain" class="primary">Play Again</button>
+      <button id="goResults" class="primary">See Scoreboard</button>
     </div>
   </div>
 </div>
 
+<!-- Netlify Forms (hidden) -->
+<form name="arcade-results" method="POST" data-netlify="true" netlify-honeypot="bot-field" hidden>
+  <input type="text" name="player" />
+  <input type="text" name="points" />
+  <input type="text" name="humanTimeSec" />
+  <input type="text" name="botTimeSec" />
+  <input type="text" name="winner" />
+  <input type="text" name="userAgent" />
+  <input type="text" name="timestamp" />
+  <input type="text" name="humanCorrect" />
+  <input type="text" name="botCorrect" />
+  <input type="text" name="game" value="Swipe Security v6" />
+</form>
+
 <script>
-// -------- Config --------
-const TARGET_TASKS = 12;
-const TIME_START = 60;
-const TIME_PENALTY = 3;
-const SKIPS_START = 2;
-// Slower bot with thinking delay + jitter
-const BOT_THINK_MS = 900;      // initial thinking time
-const BOT_PER_Q_BASE = 850;    // base ms per question
-const BOT_PER_Q_JITTER = 300;  // random extra 0-300ms
-document.getElementById("targetN").textContent = TARGET_TASKS;
+function setVH(){ document.documentElement.style.setProperty('--vh', (window.innerHeight*0.01)+'px'); }
+setVH(); addEventListener('resize', setVH); addEventListener('orientationchange', setVH);
 
-// -------- Data Pools --------
-const NAMES=[
-  ["Asha","Verma"],["Ravi","Patel"],["Maya","Sharma"],["Arjun","Mehta"],["Priya","Kumar"],
-  ["Nikhil","Gupta"],["Neha","Kapoor"],["Karan","Joshi"],["Isha","Malhotra"],["Rohan","Desai"],
-  ["Anita","Bose"],["Rahul","Chopra"],["Vikram","Singh"],["Pooja","Rao"],["Dev","Nair"]
-];
-const TICKETS=[
-  {desc:"Laptop not turning on", cat:"IT"},
-  {desc:"Password reset required", cat:"IT"},
-  {desc:"Reimbursement not received", cat:"Finance"},
-  {desc:"New employee onboarding paperwork", cat:"HR"},
-  {desc:"Phishing email reported by user", cat:"Security"},
-  {desc:"Air conditioner too cold in Meeting Room 3", cat:"Facilities"},
-  {desc:"Vendor invoice duplicate flagged", cat:"Finance"},
-  {desc:"Access to HR portal needed", cat:"HR"},
-  {desc:"Badge access not working", cat:"Security"}
-];
-const INVOICES=[
-  {txt:"Invoice #1432\nSubtotal: 1,250.00\nTax: 225.00\nTotal Due: 1,475.00", total:"1,475.00", distractors:["1,250.00","1,225.00"]},
-  {txt:"INV-2049\nItems: 3\nSubtotal: 980.00\nGST: 176.40\nTotal Due: 1,156.40", total:"1,156.40", distractors:["980.00","1,196.40"]},
-  {txt:"Invoice #889\nSubtotal: 2,300.00\nDiscount: 115.00\nTax: 392.70\nTotal Due: 2,577.70", total:"2,577.70", distractors:["2,300.00","2,607.70"]},
-  {txt:"INV-551\nSubtotal: 450.00\nTax: 81.00\nShipping: 25.00\nTotal Due: 556.00", total:"556.00", distractors:["531.00","575.00"]}
-];
-
-// -------- Helpers --------
+const $ = s => document.querySelector(s);
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function choice(a){return a[Math.floor(Math.random()*a.length)]}
-function emailBCG(f,l){return `${l.toLowerCase()}.${f.toLowerCase()}@bcg.com`}
-function pct(a,b){return (b?Math.round(a/b*100):100)+"%"}
-function fmt(ms){return (ms/1000).toFixed(1)}
-function vibrate(ms){ if(navigator.vibrate) try{navigator.vibrate(ms)}catch(e){} }
-function show(el,flag){ el.style.display = flag ? "" : "none"; }
+function sampleUnique(arr,n){const c=arr.slice();shuffle(c);return c.slice(0,n)}
+function clamp(n,min,max){return Math.max(min,Math.min(max,n))}
+function esc(t){return String(t).replace(/[&<>]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[s]))}
 
-// Confetti
-function launchConfetti(){
-  const root=document.getElementById("confetti"); root.innerHTML="";
-  for(let i=0;i<90;i++){
-    const d=document.createElement("div");
-    d.className="piece"; d.style.left=Math.random()*100+"%";
-    d.style.background=`hsl(${Math.floor(Math.random()*360)},90%,60%)`;
-    const fall=700+Math.random()*1200; d.style.transition=`transform ${fall}ms ease-out, opacity ${fall}ms linear`;
-    root.appendChild(d);
-    requestAnimationFrame(()=>{ d.style.transform=`translateY(${window.innerHeight+40}px) rotate(${Math.random()*720-360}deg)`; d.style.opacity="0"; });
-    setTimeout(()=>d.remove(), fall);
-  }
+// --- SVG factories for varied looks ---
+function smsCard(sender, body){
+  const svg = `
+  <svg xmlns='http://www.w3.org/2000/svg' width='1200' height='800'>
+    <defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#0e1528'/><stop offset='1' stop-color='#0a0f1e'/></linearGradient></defs>
+    <rect width='100%' height='100%' fill='url(#g)'/>
+    <rect x='60' y='40' rx='24' ry='24' width='1080' height='120' fill='#111827' stroke='#1f2937' stroke-width='2'/>
+    <text x='100' y='110' font-family='system-ui,Segoe UI,Arial' font-size='42' fill='#e5e7eb' font-weight='700'>${esc(sender)}</text>
+    <rect x='120' y='240' rx='22' ry='22' width='880' height='160' fill='#1f2937'/>
+    <text x='150' y='310' font-family='system-ui,Segoe UI,Arial' font-size='36' fill='#d1d5db'>${esc(body)}</text>
+  </svg>`;
+  return "data:image/svg+xml;utf8,"+encodeURIComponent(svg);
+}
+function callCard(name, number, sub){
+  const svg = `
+  <svg xmlns='http://www.w3.org/2000/svg' width='1200' height='800'>
+    <defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#0f0c29'/><stop offset='1' stop-color='#24243e'/></linearGradient></defs>
+    <rect width='100%' height='100%' fill='url(#g)'/>
+    <text x='80' y='160' font-family='system-ui,Segoe UI,Arial' font-size='56' fill='#fff' font-weight='700'>Incoming call</text>
+    <text x='80' y='240' font-family='system-ui,Segoe UI,Arial' font-size='48' fill='#e5e7eb' font-weight='700'>${esc(name)}</text>
+    <text x='80' y='300' font-family='system-ui,Segoe UI,Arial' font-size='36' fill='#cbd5e1'>${esc(number)}</text>
+    <text x='80' y='360' font-family='system-ui,Segoe UI,Arial' font-size='30' fill='#fca5a5'>${esc(sub)}</text>
+  </svg>`;
+  return "data:image/svg+xml;utf8,"+encodeURIComponent(svg);
+}
+function qrPoster(title, line){
+  function blocks(seed){let s='',r=seed;for(let i=0;i<90;i++){const x=760+(i%10)*28,y=280+Math.floor(i/10)*28;r=(r*9301+49297)%233280;if(r/233280>0.5)s+=`<rect x='${x}' y='${y}' width='24' height='24' fill='#111'/>`}return s;}
+  const svg = `
+  <svg xmlns='http://www.w3.org/2000/svg' width='1200' height='800'>
+    <defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#0b1220'/><stop offset='1' stop-color='#0a0f1e'/></linearGradient></defs>
+    <rect width='100%' height='100%' fill='url(#g)'/>
+    <text x='80' y='160' font-family='system-ui,Segoe UI,Arial' font-size='60' fill='#fbbf24' font-weight='900'>${esc(title)}</text>
+    <text x='80' y='230' font-family='system-ui,Segoe UI,Arial' font-size='36' fill='#e5e7eb'>${esc(line)}</text>
+    <rect x='740' y='260' width='300' height='300' fill='#fff'/>${blocks(title.length*line.length)}
+  </svg>`;
+  return "data:image/svg+xml;utf8,"+encodeURIComponent(svg);
+}
+function emailCard(from, subject, lines){
+  const svg = `
+  <svg xmlns='http://www.w3.org/2000/svg' width='1200' height='800'>
+    <defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#0b1220'/><stop offset='1' stop-color='#0d1326'/></linearGradient></defs>
+    <rect width='100%' height='100%' fill='url(#g)'/>
+    <rect x='80' y='80' width='1040' height='80' rx='12' fill='#111827'/>
+    <text x='100' y='130' font-family='system-ui,Segoe UI,Arial' font-size='36' fill='#e5e7eb'>Inbox</text>
+    <rect x='80' y='200' width='1040' height='440' rx='16' fill='#0f172a' stroke='#1f2937'/>
+    <text x='110' y='260' font-family='system-ui,Segoe UI,Arial' font-size='30' fill='#93c5fd'>From: ${esc(from)}</text>
+    <text x='110' y='310' font-family='system-ui,Segoe UI,Arial' font-size='30' fill='#e5e7eb'>Subject: ${esc(subject)}</text>
+    <text x='110' y='360' font-family='system-ui,Segoe UI,Arial' font-size='28' fill='#d1d5db'>${esc(lines)}</text>
+  </svg>`;
+  return "data:image/svg+xml;utf8,"+encodeURIComponent(svg);
+}
+function socialCard(handle, text){
+  const svg = `
+  <svg xmlns='http://www.w3.org/2000/svg' width='1200' height='800'>
+    <defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#0e1322'/><stop offset='1' stop-color='#0a0f1e'/></linearGradient></defs>
+    <rect width='100%' height='100%' fill='url(#g)'/>
+    <circle cx='120' cy='180' r='50' fill='#1d4ed8'/>
+    <text x='190' y='190' font-family='system-ui,Segoe UI,Arial' font-size='36' fill='#e5e7eb' font-weight='700'>${esc(handle)}</text>
+    <rect x='80' y='240' width='1040' height='320' rx='16' fill='#0f172a' stroke='#1f2937'/>
+    <text x='110' y='300' font-family='system-ui,Segoe UI,Arial' font-size='28' fill='#d1d5db'>${esc(text)}</text>
+  </svg>`;
+  return "data:image/svg+xml;utf8,"+encodeURIComponent(svg);
 }
 
-// Winner Modal
-function openWinner(title, sub, emoji){
-  const ov=document.getElementById("winner");
-  document.getElementById("winnerText").textContent = title;
-  document.getElementById("winnerSub").textContent = sub;
-  document.getElementById("winnerEmoji").textContent = emoji || "🏆";
-  ov.style.display="flex";
-}
-function closeWinner(){ document.getElementById("winner").style.display="none"; }
+// Items: each has {url, question, attack:true/false}
+const ITEMS = [
+  // Smishing
+  {url:smsCard("Bank-Verify","Your card locked. Tap http://bnk-secure.link to unlock"), question:"Is this SMISHING?", attack:true},
+  {url:smsCard("HR Desk","Reminder: Townhall 3pm at cafeteria."), question:"Is this SMISHING?", attack:false},
+  {url:smsCard("Delivery","Pay ₹50 to release your parcel: bit.ly/fee"), question:"Is this SMISHING?", attack:true},
+  {url:smsCard("Security","Unusual sign-in. Send your password to confirm."), question:"Is this SMISHING?", attack:true},
+  {url:smsCard("Manager","Please share the deck before 5pm"), question:"Is this SMISHING?", attack:false},
 
-// -------- Question generation --------
-function genEmailQ(){
-  const [f,l]=choice(NAMES);
-  const correct=emailBCG(f,l);
-  const wrongs=shuffle([`${f.toLowerCase()}.${l.toLowerCase()}@bcg.com`,`${l.toLowerCase()}_${f.toLowerCase()}@bcg.com`,`${l.toLowerCase()}${f[0].toLowerCase()}@bcg.com`]).slice(0,2);
-  const opts=shuffle([correct,...wrongs]);
-  return {
-    type:"email",
-    prompt:`<b>Email Formatter</b><br>Pick the correct BCG address:<br><span class="pill">${l}, ${f}</span><br><span class="muted">Format: <code>lastname.firstname@bcg.com</code></span>`,
-    options:opts,
-    correct:opts.indexOf(correct)
-  };
-}
-function genTicketQ(){
-  const t=choice(TICKETS);
-  const opts=shuffle(["IT","HR","Finance","Facilities","Security"]);
-  return {
-    type:"ticket",
-    prompt:`<b>Ticket Router</b><br>Which queue?<br><div class="prompt" style="margin-top:6px;white-space:pre-line">${t.desc}</div>`,
-    options:opts,
-    correct:opts.indexOf(t.cat)
-  };
-}
-function genInvoiceQ(){
-  const inv=choice(INVOICES);
-  const opts=shuffle([inv.total,...inv.distractors]).map(x=>"₹ "+x);
-  return {
-    type:"invoice",
-    prompt:`<b>Invoice Extract</b><br>Tap the correct <b>Total Due</b>:`+
-      `<div class="prompt" style="margin-top:6px;white-space:pre-line">${inv.txt}</div>`,
-    options:opts,
-    correct:opts.indexOf("₹ "+inv.total)
-  };
-}
-function genQuestions(n){
-  const arr=[];
-  for(let i=0;i<n;i++){
-    arr.push(Math.random()<.34?genEmailQ(): Math.random()<.5?genTicketQ(): genInvoiceQ());
-  }
-  return arr;
-}
+  // Vishing
+  {url:callCard("Your Bank (Spoofed)","1800‑555‑0199","We need your OTP now"), question:"Is this VISHING?", attack:true},
+  {url:callCard("Tech Support","+1 (888) 010‑9988","Remote access needed to fix virus"), question:"Is this VISHING?", attack:true},
+  {url:callCard("Reception","100","Visitor has arrived"), question:"Is this VISHING?", attack:false},
+  {url:callCard("HR Helpdesk","*2213","Reminder: policy update"), question:"Is this VISHING?", attack:false},
 
-// -------- State --------
-let QUESTIONS=[];
-let qIndex=0, done=0, correctCount=0, wrongCount=0, skipsLeft=SKIPS_START;
-let time=TIME_START, tHandle=null, running=false, finishedHuman=false;
-let botRunning=false, botTicker=null, botStart=null, botEnd=null;
+  // Quishing
+  {url:qrPoster("Win a Gift Card","Scan QR to claim now!"), question:"Is this QUISHING?", attack:true},
+  {url:qrPoster("Free Wi‑Fi","Scan QR to connect"), question:"Is this QUISHING?", attack:true},
+  {url:qrPoster("Room Check‑in","Scan company badge QR"), question:"Is this QUISHING?", attack:false},
 
-// Elements
-const elTime=document.getElementById("time");
-const elBar=document.getElementById("bar");
-const elPrompt=document.getElementById("prompt");
-const elOptions=document.getElementById("options");
-const elNote=document.getElementById("note");
-const elDone=document.getElementById("done");
-const elAcc=document.getElementById("acc");
-const elSkips=document.getElementById("skipsLeft");
-const elStartBot=document.getElementById("startBot");
-const elBotPill=document.getElementById("botPill");
-const elBotTime=document.getElementById("botTime");
-const startTile=document.getElementById("startTile");
-const hud=document.getElementById("hud");
+  // Email phishing
+  {url:emailCard("it-support@cont0so.com","Password expires today","Click this link to keep access."), question:"Is this EMAIL PHISHING?", attack:true},
+  {url:emailCard("no-reply@bcg.com","Crew café menu","See this week’s lunch options."), question:"Is this EMAIL PHISHING?", attack:false},
+  {url:emailCard("payroll@bcg.com","Update bank details","Submit your full account & OTP."), question:"Is this EMAIL PHISHING?", attack:true},
+  {url:emailCard("events@bcg.com","Tech Talk invite","Add to calendar"), question:"Is this EMAIL PHISHING?", attack:false},
 
-// -------- Rendering --------
-function renderQuestion(){
-  const q=QUESTIONS[qIndex];
-  show(elPrompt,true); show(elOptions,true); show(elNote,true); show(hud,true);
-  elPrompt.innerHTML=q.prompt;
-  elOptions.innerHTML = q.options.map((o,i)=>`<button class="opt" data-i="${i}">${o}</button>`).join("");
-  [...elOptions.children].forEach(btn=>{
-    btn.onclick=()=>{
-      const pick=Number(btn.dataset.i);
-      // Highlight selection
-      if(pick===q.correct){
-        btn.classList.add("correct");
-        vibrate(12);
-        correctCount++; done++; qIndex++;
-        elDone.textContent=done; elAcc.textContent=pct(correctCount, correctCount+wrongCount);
-        lockAndReveal(q.correct);
-        setTimeout(nextStep, 320);
-      }else{
-        btn.classList.add("wrong");
-        vibrate([30]);
-        wrongCount++; elAcc.textContent=pct(correctCount, correctCount+wrongCount);
-        time=Math.max(0, time - TIME_PENALTY);
-        updateTime();
-        lockAndReveal(q.correct);
-        setTimeout(nextStep, 520);
-      }
-    };
+  // Spear phishing / Whaling (targeted)
+  {url:emailCard("ceo-office@exec‑alerts.com","Urgent: Gift cards needed","Keep confidential. Reply when done."), question:"Is this WHALING (targeting execs)?", attack:true},
+  {url:emailCard("vendor‑ap@payments‑secure.co","Invoice correction needed","Open attachment & re-enter password."), question:"Is this SPEAR PHISHING?", attack:true},
+  {url:emailCard("finance@bcg.com","Budget review notes","Please see the spreadsheet."), question:"Is this SPEAR PHISHING?", attack:false},
+
+  // Angler (social media impersonation)
+  {url:socialCard("@BankHelp","Hi! DM us your card & OTP to verify."), question:"Is this ANGLER PHISHING (social impersonation)?", attack:true},
+  {url:socialCard("@BCG_Café","Free coffee for volunteers today ☕"), question:"Is this ANGLER PHISHING (social impersonation)?", attack:false},
+
+  // More email styles to reach ~30 items
+  {url:emailCard("admin@share‑docs.com","Doc shared with you","Sign in with your email to open"), question:"Is this EMAIL PHISHING?", attack:true},
+  {url:emailCard("okta@login‑verify.co","Single‑Sign‑On locked","Confirm your password now"), question:"Is this EMAIL PHISHING?", attack:true},
+  {url:emailCard("security@bcg.com","VPN maintenance Friday 8–9pm","No action needed."), question:"Is this EMAIL PHISHING?", attack:false},
+  {url:emailCard("hr@bcg.com","Policy update attached","Read and acknowledge by EOD"), question:"Is this EMAIL PHISHING?", attack:false},
+  {url:emailCard("microsoft‑billing@pay‑renew.com","License expired","Pay via UPI to avoid loss of access"), question:"Is this EMAIL PHISHING?", attack:true},
+  {url:emailCard("drive‑notify@filesharing‑safe.com","Someone shared a secure PDF","Enter your email password to view"), question:"Is this EMAIL PHISHING?", attack:true},
+
+  // Extra smish/vish variety
+  {url:smsCard("TAX‑Dept","Refund ready. Verify UPI here: refund.tax-fast.in"), question:"Is this SMISHING?", attack:true},
+  {url:smsCard("Facilities","AC maintenance tonight on Floor 5"), question:"Is this SMISHING?", attack:false},
+  {url:callCard("Courier Verification","+44 20 7946 0011","Pay small fee to release parcel"), question:"Is this VISHING?", attack:true},
+  {url:callCard("Unknown","No Caller ID","Urgent: verify identity now"), question:"Is this VISHING?", attack:true}
+];
+
+const QUESTIONS_PER_ROUND = 10;
+const ROUND_SECONDS = 60;
+
+// ----- Gate -----
+(function initGate(){
+  const prior = localStorage.getItem('svq_player_name')||"";
+  $('#playerName').value = prior;
+  $('#gateForm').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const name = $('#playerName').value.trim();
+    if(!name) return;
+    localStorage.setItem('svq_player_name', name);
+    try{ if(document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen(); }catch(_){}
+    $('#gateCard').classList.add('hidden');
+    $('#gameUI').classList.remove('hidden');
+    window.scrollTo(0,1);
   });
-  elNote.textContent = `Wrong = -${TIME_PENALTY}s • Skips left: ${skipsLeft}`;
-}
-function lockAndReveal(correctIndex){
-  [...elOptions.children].forEach((b,i)=>{
-    b.disabled=true;
-    if(i===correctIndex) b.classList.add("correct");
-  });
-}
-function nextStep(){
-  if(done>=TARGET_TASKS){ finishHuman(true); return; }
-  if(qIndex>=QUESTIONS.length){ finishHuman(true); return; }
-  renderQuestion();
-}
+})();
 
-// -------- Timer --------
-function updateTime(){
-  elTime.textContent = time;
-  elBar.style.width = (time/TIME_START*100)+"%";
-  if(time<=0){ finishHuman(false); }
+// ----- Game state -----
+let deck=[], idx=0, running=false, timeLeft=ROUND_SECONDS, timer=null;
+let points=0, streak=0, mult=1;
+let humanStart, humanEnd, humanCorrect=0, humanAnswers=[];
+let cardEl=null, startX=0, startY=0, dragging=false;
+
+function mountCard(item){
+  if(cardEl) cardEl.remove();
+  const el=document.createElement('div'); el.className='tcard';
+  el.innerHTML=`
+    <img class="timg" src="${item.url}"/>
+    <div class="badge no" id="bNo" style="opacity:0">NO = SAFE</div>
+    <div class="badge yes" id="bYes" style="opacity:0">YES = ATTACK</div>
+    <div class="qtext">${item.question}</div>
+    <div class="helper">Swipe <b>RIGHT for YES (attack)</b> • <b>LEFT for NO (safe)</b></div>
+  `;
+  $('#arena').appendChild(el); cardEl=el;
+  const bYes = el.querySelector('#bYes'), bNo = el.querySelector('#bNo');
+
+  el.addEventListener('touchstart',(e)=>{dragging=true; const t=e.changedTouches[0]; startX=t.clientX; startY=t.clientY;},{passive:true});
+  el.addEventListener('touchmove',(e)=>{ if(!dragging) return; const t=e.changedTouches[0]; const dx=t.clientX-startX, dy=t.clientY-startY; el.style.transform=`translate(${dx}px,${dy}px) rotate(${dx/16}deg)`; const op=Math.min(1,Math.abs(dx)/120); bYes.style.opacity=dx>0?op:0; bNo.style.opacity=dx<0?op:0; },{passive:true});
+  el.addEventListener('touchend',(e)=>{ if(!dragging) return; dragging=false; const t=e.changedTouches[0]; const dx=t.clientX-startX, dy=t.clientY-startY; if(Math.abs(dx)>Math.abs(dy) && Math.abs(dx)>90){ classify(dx>0?'RIGHT':'LEFT', item); } else { el.style.transition='transform .18s'; el.style.transform='translate(0,0) rotate(0)'; setTimeout(()=>el.style.transition='',200);} },{passive:true});
 }
-function tick(){ time--; if(time<0) time=0; updateTime(); }
-function startHuman(){
+function flash(ok){
+  const f=document.createElement('div'); f.className='flash '+(ok?'ok':'no'); f.textContent=ok?'Correct!':'Incorrect'; cardEl.appendChild(f); setTimeout(()=>f.remove(), 350);
+}
+function classify(dir,item){
+  // RIGHT = YES (attack), LEFT = NO (safe)
+  const answeredAttack = (dir==='RIGHT');
+  const correct = (answeredAttack === item.attack);
+  humanAnswers.push(correct);
+  flash(correct);
+  if(correct){ points+=Math.round(100*mult); streak++; mult=Math.min(4,1+Math.floor(streak/4)*0.5); humanCorrect++; } else { streak=0; mult=Math.max(1,mult-0.5); }
+  $('#points').textContent=points;
+  const offX=dir==='RIGHT'?innerWidth:-innerWidth;
+  cardEl.style.transition='transform .18s, opacity .18s, border-color .18s';
+  cardEl.style.borderColor=correct?'rgba(16,185,129,.9)':'rgba(239,68,68,.95)';
+  cardEl.style.opacity='0.2'; cardEl.style.transform=`translate(${offX}px,${correct?-10:10}px) rotate(${dir==='RIGHT'?14:-14}deg)`;
+  setTimeout(()=>{ idx++; if(idx>=deck.length){ stopGame(); } else mountCard(deck[idx]); }, 160);
+}
+function startGame(){
   if(running) return;
-  running=true; finishedHuman=false;
-  QUESTIONS = genQuestions(TARGET_TASKS);
-  qIndex=0; done=0; correctCount=0; wrongCount=0; skipsLeft=SKIPS_START;
-  time=TIME_START; updateTime();
-  elDone.textContent="0"; elAcc.textContent="100%"; elSkips.textContent=SKIPS_START;
-  clearInterval(tHandle); tHandle=setInterval(tick, 1000);
-  startTile.style.display="none"; // hide tile
-  renderQuestion();
-  document.getElementById("save").disabled=true;
-  elStartBot.style.display="none";
-  elBotPill.style.display="none"; elBotTime.textContent="0.0";
+  running=true; timeLeft=ROUND_SECONDS; $('#time').textContent=timeLeft; $('#bar').style.width='100%';
+  points=0; streak=0; mult=1; humanCorrect=0; humanAnswers=[];
+  deck = sampleUnique(ITEMS, QUESTIONS_PER_ROUND); idx=0;
+  $('#tapToStart')?.remove();
+  mountCard(deck[idx]);
+  humanStart=performance.now();
+  clearInterval(timer);
+  timer=setInterval(()=>{ timeLeft--; if(timeLeft<0) timeLeft=0; $('#time').textContent=timeLeft; $('#bar').style.width=(timeLeft/ROUND_SECONDS*100)+'%'; if(timeLeft<=0) stopGame(); },1000);
 }
-function finishHuman(completedAll){
-  running=false; finishedHuman=true; clearInterval(tHandle);
-  const secondsLeft = Math.max(0,time);
-  elOptions.innerHTML="";
-  elPrompt.innerHTML = completedAll
-    ? `<b>Nice!</b> You completed ${TARGET_TASKS} tasks with <b>${secondsLeft}</b>s left.`
-    : `<b>Time!</b> You completed ${done}/${TARGET_TASKS} tasks.`;
-  launchConfetti();
-  // Show "Start Bot Now"
-  elStartBot.style.display="inline-block";
+function stopGame(){
+  if(!running) return; running=false; clearInterval(timer); humanEnd=performance.now();
+  if(cardEl){cardEl.remove(); cardEl=null;}
+  // 3-2-1 then bot
+  const cd=$('#countdown'), num=$('#countNum'); let n=3; num.textContent=n; cd.style.display='flex';
+  const t=setInterval(()=>{ n--; if(n<=0){ clearInterval(t); cd.style.display='none'; runBot(); } else { num.textContent=n; } }, 400);
 }
+$('#arena').addEventListener('click', ()=>{ if(!running) startGame(); }, {passive:true});
 
-// -------- Skips --------
-document.getElementById("skip").onclick=()=>{
-  if(!running) return;
-  if(skipsLeft>0){
-    skipsLeft--; elSkips.textContent=skipsLeft;
-    qIndex++; done++; elDone.textContent=done;
-    if(done>=TARGET_TASKS){ finishHuman(true); } else { renderQuestion(); }
-  }else{
-    elNote.textContent="No skips left.";
-  }
-};
-
-// -------- Bot run (replay same questions, choose correct options, slowed) --------
+// ----- Adaptive bot (visible ~5s total) -----
+let botCorrect=0, botReportedTime=0;
+function botPlan(){
+  const n=deck.length;
+  let target;
+  if(humanCorrect>=7) target=Math.max(0,humanCorrect-(Math.random()<0.8?1:0));
+  else if(humanCorrect>=5) target=humanCorrect+(Math.random()<0.4?0:-1);
+  else if(humanCorrect>=3) target=humanCorrect+(Math.random()<0.55?1:0);
+  else target=Math.min(n,humanCorrect+(Math.random()<0.7?2:1));
+  const wrong=n-target; const idxs=[...Array(n).keys()]; const humanWrongIdx=idxs.filter(i=>!humanAnswers[i]); const pool=(Math.random()<0.6&&humanWrongIdx.length)?humanWrongIdx.slice():idxs; shuffle(pool);
+  return new Set(pool.slice(0,wrong));
+}
+function botTargetTime(){
+  const humanTime=(humanEnd-humanStart)/1000;
+  let factor = humanCorrect>=7 ? (1+Math.random()*0.15) : humanCorrect<=3 ? (0.9+Math.random()*0.1) : (0.95+Math.random()*0.1);
+  return humanTime*factor;
+}
 function runBot(){
-  if(botRunning) return;
-  botRunning=true; elStartBot.style.display="none";
-  elBotPill.style.display="inline-flex";
-  // reset view to quiz mode
-  show(elPrompt,true); show(elOptions,true); show(elNote,true);
-  elPrompt.innerHTML = "<b>Bot thinking...</b>";
-  elOptions.innerHTML = "";
-  // bot timer
-  botStart = performance.now(); botEnd=null;
-  clearInterval(botTicker);
-  botTicker=setInterval(()=>{
-    if(botStart && !botEnd){
-      const ms = performance.now()-botStart;
-      elBotTime.textContent = fmt(ms);
-    }
-  }, 100);
-
-  // after initial thinking delay, start answering
-  setTimeout(()=>{
-    qIndex=0;
-    function doOne(){
-      if(qIndex>=QUESTIONS.length){
-        botEnd = performance.now(); clearInterval(botTicker); botRunning=false;
-        const botSeconds = Number(fmt(botEnd - botStart));
-        elPrompt.innerHTML += `<br><br><span class="muted">Bot finished in <b>${botSeconds}s</b>.</span>`;
-        document.getElementById("save").disabled=false;
-        // Winner logic
-        const humanSecondsLeft = Math.max(0,time);
-        const humanTimeUsed = TIME_START - humanSecondsLeft;
-        let title, sub, emoji;
-        if(done>=TARGET_TASKS){
-          if(humanTimeUsed < botSeconds){ title="🎉 Human Wins!"; sub=`You finished in ${humanTimeUsed.toFixed(1)}s vs Bot ${botSeconds}s`; emoji="😎"; }
-          else if(humanTimeUsed > botSeconds){ title="🤖 Bot Wins"; sub=`Bot ${botSeconds}s vs Human ${humanTimeUsed.toFixed(1)}s`; emoji="🤖"; }
-          else { title="It's a Tie!"; sub=`Both at ${botSeconds}s`; emoji="🤝"; }
-        }else{
-          title="🤖 Bot Wins"; sub=`Human didn't finish. Bot ${botSeconds}s`; emoji="🤖";
-        }
-        openWinner(title, sub, emoji);
-        launchConfetti();
-        return;
-      }
-      const q=QUESTIONS[qIndex];
-      elPrompt.innerHTML=q.prompt;
-      elOptions.innerHTML = q.options.map((o,i)=>`<button class="opt" disabled>${o}</button>`).join("");
-      const buttons=[...elOptions.children];
-      const delay = BOT_PER_Q_BASE + Math.floor(Math.random()*BOT_PER_Q_JITTER);
-      setTimeout(()=>{ buttons[q.correct].classList.add("correct"); }, Math.floor(delay/2));
-      setTimeout(()=>{ qIndex++; doOne(); }, delay);
-    }
-    doOne();
-  }, BOT_THINK_MS);
-}
-
-// -------- Scoreboard --------
-const KEY="btb60_integrated_scores_v2";
-function load(){return JSON.parse(localStorage.getItem(KEY)||"[]");}
-function save(a){localStorage.setItem(KEY, JSON.stringify(a));}
-function renderRows(){
-  const arr=load().sort((a,b)=> b.humanSecondsLeft - a.humanSecondsLeft || b.tasks - a.tasks || b.acc - a.acc );
-  document.getElementById("rows").innerHTML = arr.map((x,i)=>`<tr><td>${i+1}</td><td>${x.name}</td><td>${x.humanSecondsLeft}</td><td>${x.tasks}</td><td>${x.acc}%</td><td>${x.botSeconds??"-"}</td><td>${x.winner}</td><td>${new Date(x.when).toLocaleString()}</td></tr>`).join("");
-}
-document.getElementById("save").onclick=()=>{
-  const name=(document.getElementById("name").value||"Player").trim();
-  const humanSecondsLeft=Math.max(0,time);
-  const acc = (correctCount+wrongCount)?Math.round(correctCount/(correctCount+wrongCount)*100):100;
-  const botSeconds = (botStart && botEnd) ? Number(fmt(botEnd - botStart)) : null;
-  let winner = "-";
-  if(botSeconds!=null){
-    const humanTimeUsed = TIME_START - humanSecondsLeft;
-    if(done>=TARGET_TASKS){
-      if(humanTimeUsed < botSeconds){ winner="Human"; }
-      else if(humanTimeUsed > botSeconds){ winner="Bot"; }
-      else { winner="Tie"; }
-    }else{
-      winner="Bot";
-    }
+  botCorrect=0;
+  const wrongSet=botPlan();
+  const targetSec=botTargetTime(); botReportedTime=targetSec; // shown in results
+  // Visible playback ≈5s total
+  const totalMs = 5200;
+  const perMs = Math.max(220, (totalMs / Math.max(1, deck.length))); // ~500ms each for 10
+  let i=0;
+  function step(){
+    if(i>=deck.length) return afterBot();
+    const item=deck[i]; const wrong=wrongSet.has(i); const correct=!wrong;
+    if(cardEl) cardEl.remove();
+    const el=document.createElement('div'); el.className='tcard';
+    const badgeClass=correct?'yes':'no';
+    const badgeText=correct?'YES = ATTACK':'NO = SAFE';
+    el.innerHTML=`<img class="timg" src="${item.url}"/><div class="badge ${badgeClass}" style="opacity:1">${badgeText}</div><div class="qtext">${item.question}</div><div class="helper">[bot answering]</div>`;
+    $('#arena').appendChild(el); cardEl=el;
+    setTimeout(()=>{ if(correct) botCorrect++; el.style.transition='transform .18s, opacity .18s'; el.style.opacity='0.2'; el.style.transform='translate(0,-12px)'; setTimeout(()=>{i++; step();}, perMs*0.75); }, perMs*0.25);
   }
-  const row={name, humanSecondsLeft, tasks: done, acc, botSeconds, winner, when: Date.now()};
-  const arr=load(); arr.push(row); save(arr); renderRows();
-};
-document.getElementById("export").onclick=()=>{
-  const arr=load();
-  const header="Name,HumanSecondsLeft,Tasks,Accuracy,BotSeconds,Winner,When\n";
-  const lines=arr.map(x=>`${x.name},${x.humanSecondsLeft},${x.tasks},${x.acc},${x.botSeconds??""},${x.winner},${new Date(x.when).toISOString()}`).join("\n");
-  const csv=header+lines; const blob=new Blob([csv],{type:"text/csv"}); const url=URL.createObjectURL(blob);
-  const a=document.createElement("a"); a.href=url; a.download="beat_the_bot_60_v2_scores.csv"; a.click(); URL.revokeObjectURL(url);
-};
-document.getElementById("clear").onclick=()=>{ if(confirm("Clear scoreboard on this device?")){ save([]); renderRows(); }};
-document.getElementById("share").onclick=()=>{
-  const arr=load(); const top=arr.sort((a,b)=> b.humanSecondsLeft - a.humanSecondsLeft || b.tasks - a.tasks )[0];
-  const msg = top ? `Top: ${top.name} had ${top.humanSecondsLeft}s left (tasks ${top.tasks}).` : "No scores yet";
-  if(navigator.share){ navigator.share({title:"Beat the Bot — 60s", text: msg}).catch(()=>{}); } else { alert(msg); }
-};
+  step();
+}
+function afterBot(){
+  let est=0,m=1; for(let i=0;i<botCorrect;i++){ est+=Math.round(100*m); if((i+1)%4===0) m+=0.5; }
+  const botPts=est; const humanPts=points;
+  let winner=""; if(humanCorrect>botCorrect) winner="Human"; else if(humanCorrect<botCorrect) winner="Bot"; else winner = ((humanEnd-humanStart)/1000 <= botReportedTime ? "Human":"Bot");
+  openWinner(winner, (humanEnd-humanStart)/1000, botReportedTime, humanPts, botPts);
+  submitScore(winner, (humanEnd-humanStart)/1000, botReportedTime); saveLocal(winner, (humanEnd-humanStart)/1000, botReportedTime);
+}
 
-// -------- Controls --------
-document.getElementById("startBtn").onclick=startHuman;
-document.getElementById("startBot").onclick=runBot;
-startTile.onclick=startHuman;
-document.getElementById("closeWinner").onclick=closeWinner;
-document.getElementById("playAgain").onclick=()=>{ closeWinner(); location.reload(); };
+// ----- winner + results -----
+function openWinner(winner,humanTime,botTime,hPts,bPts){
+  const name=localStorage.getItem('svq_player_name')||'Human';
+  $('#winnerEmoji').textContent = winner==="Human"?"😎":"🤖";
+  $('#winnerText').textContent = winner==="Human"? `${name} Wins!` : "Bot Wins";
+  $('#winnerSub').textContent = `${name}: ${humanCorrect}/${deck.length} in ${humanTime.toFixed(1)}s • Bot: ${botCorrect}/${deck.length} in ${botTime.toFixed(1)}s`;
+  $('#winner').style.display='flex';
+}
+$('#closeWinner').addEventListener('click', ()=>$('#winner').style.display='none');
+$('#goResults').addEventListener('click', ()=>{ $('#winner').style.display='none'; showResults(); });
 
-// Initial render
-renderRows();
+// ----- Netlify form -----
+async function submitScore(winner,humanTime,botTime){
+  const f=document.forms['arcade-results']; const name=localStorage.getItem('svq_player_name')||'Player';
+  f.player.value=name; f.points.value=String(points); f.humanTimeSec.value=humanTime.toFixed(1); f.botTimeSec.value=botTime.toFixed(1);
+  f.humanCorrect.value=String(humanCorrect); f.botCorrect.value=String(botCorrect); f.winner.value=winner; f.userAgent.value=navigator.userAgent; f.timestamp.value=new Date().toISOString();
+  try{ await fetch('/', {method:'POST', body:new FormData(f)});}catch(_){}
+}
+
+// ----- local scoreboard -----
+const KEY='svq_scores_v6';
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(_){return[]}}
+function save(a){localStorage.setItem(KEY, JSON.stringify(a))}
+function saveLocal(winner,humanTime,botTime){
+  const arr=load(); arr.push({name:localStorage.getItem('svq_player_name')||'Player',points,humanCorrect,botCorrect,humanTime,botTime,winner,when:Date.now()}); save(arr);
+}
+function showResults(){
+  $('#gameUI').classList.add('hidden'); $('#resultsPage').classList.remove('hidden');
+  const name=localStorage.getItem('svq_player_name')||'Human';
+  $('#resultTitle').textContent=`Nice run, ${name}. Here’s your local scoreboard:`;
+  const arr=load().sort((a,b)=>b.when-a.when);
+  $('#rows').innerHTML=arr.map((x,i)=>`<tr><td>${i+1}</td><td>${x.name}</td><td>${x.points}</td><td>${x.humanCorrect}</td><td>${x.botCorrect}</td><td>${x.humanTime.toFixed(1)}</td><td>${x.botTime.toFixed(1)}</td><td>${x.winner}</td><td>${new Date(x.when).toLocaleString()}</td></tr>`).join('');
+}
+document.getElementById('export').addEventListener('click', ()=>{
+  const arr=load(); const header='Name,Points,HumanCorrect,BotCorrect,HumanTimeSec,BotTimeSec,Winner,When\n';
+  const lines=arr.map(x=>`${x.name},${x.points},${x.humanCorrect},${x.botCorrect},${x.humanTime.toFixed(1)},${x.botTime.toFixed(1)},${x.winner},${new Date(x.when).toISOString()}`).join('\n');
+  const blob=new Blob([header+lines],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='svq_scores.csv'; a.click(); URL.revokeObjectURL(url);
+});
+document.getElementById('clear').addEventListener('click', ()=>{ if(confirm('Clear local scoreboard?')){ save([]); showResults(); }});
+document.getElementById('again').addEventListener('click', ()=>location.reload());
+
+// Tap arena to start
+$('#arena').addEventListener('click', ()=>{ if(!running) startGame(); }, {passive:true});
 </script>
 </body>
 </html>
